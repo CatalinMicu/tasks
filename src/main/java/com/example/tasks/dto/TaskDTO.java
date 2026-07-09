@@ -1,5 +1,6 @@
 package com.example.tasks.dto;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,16 +14,16 @@ import java.time.LocalDateTime;
 @Builder
 public class TaskDTO {
 
-    @NotNull
+    @NotEmpty
     private Long id;
 
-
+    @NotEmpty
     private String content;
 
-    @NotNull
+    @NotEmpty
     private LocalDateTime dueDate;
 
-
+    @NotEmpty
     private String status;
 
 }
