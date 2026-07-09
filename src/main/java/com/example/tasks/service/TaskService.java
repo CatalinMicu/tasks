@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -84,22 +83,34 @@ public class TaskService {
     }
 
     public List<TaskDTO> getTasksDueBefore(LocalDateTime dueDate) {
-        return tasks.stream()
-                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(dueDate))
-                .collect(Collectors.toList());
+        List<TaskDTO> filteredTasks = new ArrayList<>();
+        for (TaskDTO task : tasks) {
+            if (task.getDueDate() != null && task.getDueDate().isBefore(dueDate)) {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
     }
 
     public List<TaskDTO> getTasksByStatus(String status) {
-        return tasks.stream()
-                .filter(task -> task.getStatus() != null && task.getStatus().equalsIgnoreCase(status))
-                .collect(Collectors.toList());
+        List<TaskDTO> filteredTasks = new ArrayList<>();
+        for (TaskDTO task : tasks) {
+            if (task.getStatus() != null && task.getStatus().equalsIgnoreCase(status)) {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
     }
 
     public List<TaskDTO> searchTasks(String keyword) {
         String normalized = keyword == null ? "" : keyword.trim().toLowerCase();
-        return tasks.stream()
-                .filter(task -> task.getContent() != null && task.getContent().toLowerCase().contains(normalized))
-                .collect(Collectors.toList());
+        List<TaskDTO> filteredTasks = new ArrayList<>();
+        for (TaskDTO task : tasks) {
+            if (task.getContent() != null && task.getContent().toLowerCase().contains(normalized)) {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
     }
 
     public long countTasks() {
@@ -108,8 +119,12 @@ public class TaskService {
 
     public List<TaskDTO> getOverdueTasks() {
         LocalDateTime today = LocalDateTime.now();
-        return tasks.stream()
-                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(today))
-                .collect(Collectors.toList());
+        List<TaskDTO> overdueTasks = new ArrayList<>();
+        for (TaskDTO task : tasks) {
+            if (task.getDueDate() != null && task.getDueDate().isBefore(today)) {
+                overdueTasks.add(task);
+            }
+        }
+        return overdueTasks;
     }
 }
