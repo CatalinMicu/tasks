@@ -16,7 +16,6 @@ public class TaskService {
     public List<TaskDTO> getTasks() {
         return tasks;
     }
-
     public TaskDTO addTask(TaskDTO task) {
         TaskDTO buildTask = buildTask(task);
         tasks.add(buildTask);
