@@ -89,6 +89,13 @@ public class UserService {
         return userMapper.toDto(updatedUser);
     }
 
+    public List<UserDTO> searchByUsername(String username) {
+        return userRepository.searchByUsername(username)
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
     private void applyDefaults(User user) {
         if (user.getIsInternal() == null) {
             user.setIsInternal(1);
