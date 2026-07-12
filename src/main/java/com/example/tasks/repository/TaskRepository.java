@@ -10,6 +10,8 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findAllByUser_UserId(Long userId);
 
+    boolean existsByStatusType_StatusTypeId(String statusTypeId);
+
     @Query("""
        SELECT t
        FROM Task t

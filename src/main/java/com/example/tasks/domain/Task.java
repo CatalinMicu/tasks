@@ -4,7 +4,7 @@ package com.example.tasks.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tasks")
@@ -24,7 +24,7 @@ public class Task {
     private String name;
 
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
     @Column(name = "created_by")
     private String createdBy;

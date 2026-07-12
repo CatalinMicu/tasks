@@ -4,13 +4,13 @@ import com.example.tasks.domain.StatusType;
 import com.example.tasks.dto.StatusTypeDTO;
 import com.example.tasks.mapper.StatusTypeMapper;
 import com.example.tasks.repository.StatusTypeRepository;
+import com.example.tasks.repository.TaskRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatusTypeService {
     private final StatusTypeRepository statusTypeRepository;
+    private final TaskRepository taskRepository;
     private final StatusTypeMapper statusMapper;
 
     public List<StatusTypeDTO> getAllStatuses() {
@@ -38,6 +39,7 @@ public class StatusTypeService {
         return statusMapper.toDto(status);
     }
 
+    @Transactional
     public StatusTypeDTO updateStatus(String id, StatusTypeDTO statusTypeDTO) {
         StatusType status = statusTypeRepository.findById(id).orElse(null);
         if (status == null) {
@@ -45,10 +47,8 @@ public class StatusTypeService {
             return null;
         }
         status.setStatusName(statusTypeDTO.getStatusName());
-        status.setCreationDate(statusTypeDTO.getCreationDate());
-        status.setCreatedBy(statusTypeDTO.getCreatedBy());
-        status.setLastUpdateDate(statusTypeDTO.getLastUpdateDate());
-        status.setLastUpdatedBy(statusTypeDTO.getLastUpdatedBy());
+        status.setLastUpdateDate(LocalDateTime.now());
+        status.setLastUpdatedBy("system");
 
         StatusType updatedStatus = statusTypeRepository.save(status);
         return statusMapper.toDto(updatedStatus);
@@ -59,26 +59,32 @@ public class StatusTypeService {
         log.info("Status created!");
 
         StatusType status = statusMapper.toEntity(statusTypeDTO);
+        applyDefaults(status);
         StatusType savedStatus = statusTypeRepository.save(status);
+
 
         return statusMapper.toDto(savedStatus);
     }
 
     @Transactional
     public void deleteStatus(String id) {
+        if (taskRepository.existsByStatusType_StatusTypeId(id)) {
+            log.warn("Status type {} is used by tasks and cannot be deleted", id);
+            return;
+        }
         statusTypeRepository.deleteById(id);
     }
 
-    private void ApplyDefaults(StatusType status) {
+    private void applyDefaults(StatusType status) {
         if (status.getCreationDate() == null) {
-            status.setCreationDate(java.time.LocalDateTime.now());
+            status.setCreationDate(LocalDateTime.now());
         }
         if (status.getCreatedBy() == null || status.getCreatedBy().isBlank()) {
             status.setCreatedBy("system");
         }
 
         if (status.getLastUpdateDate() == null) {
-            status.setLastUpdateDate(java.time.LocalDateTime.now());
+            status.setLastUpdateDate(LocalDateTime.now());
         }
         if (status.getLastUpdatedBy() == null || status.getLastUpdatedBy().isBlank()) {
             status.setLastUpdatedBy("system");

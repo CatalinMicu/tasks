@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,9 +80,8 @@ public class UserService {
         existingUser.setUsername(userDTO.getUsername());
         existingUser.setBirthDate(userDTO.getBirthDate());
         existingUser.setIsInternal(userDTO.getIsInternal());
-        existingUser.setCreationDate(userDTO.getCreationDate());
-        existingUser.setCreatedBy(userDTO.getCreatedBy());
-        existingUser.setLastUpdateDate(userDTO.getLastUpdateDate());
+        existingUser.setLastUpdateDate(LocalDateTime.now());
+        existingUser.setLastUpdatedBy("system");
 
         User updatedUser = userRepository.save(existingUser);
         return userMapper.toDto(updatedUser);

@@ -12,7 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -84,7 +84,7 @@ public class TaskService {
         taskRepository.deleteAll();
     }
 
-    public List<TaskDTO> getTasksDueBefore(LocalDateTime dueDate) {
+    public List<TaskDTO> getTasksDueBefore(LocalDate dueDate) {
         return getTasks().stream()
                 .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(dueDate))
                 .toList();
@@ -108,7 +108,7 @@ public class TaskService {
     }
 
     public List<TaskDTO> getOverdueTasks() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         return getTasks().stream()
                 .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(now))
                 .toList();
