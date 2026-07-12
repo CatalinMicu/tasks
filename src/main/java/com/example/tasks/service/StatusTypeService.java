@@ -28,6 +28,7 @@ public class StatusTypeService {
                 .toList();
     }
 
+
     @Transactional
     public StatusTypeDTO createStatus(@Valid StatusTypeDTO statusTypeDTO) {
         log.info("Status created!");
@@ -41,6 +42,22 @@ public class StatusTypeService {
     @Transactional
     public void deleteStatus(String id) {
         statusTypeRepository.deleteById(id);
+    }
+
+    private void ApplyDefaults(StatusType status) {
+        if (status.getCreationDate() == null) {
+            status.setCreationDate(java.time.LocalDateTime.now());
+        }
+        if (status.getCreatedBy() == null || status.getCreatedBy().isBlank()) {
+            status.setCreatedBy("system");
+        }
+
+        if (status.getLastUpdateDate() == null) {
+            status.setLastUpdateDate(java.time.LocalDateTime.now());
+        }
+        if (status.getLastUpdatedBy() == null || status.getLastUpdatedBy().isBlank()) {
+            status.setLastUpdatedBy("system");
+        }
     }
 
 

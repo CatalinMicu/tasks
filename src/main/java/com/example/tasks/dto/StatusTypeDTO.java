@@ -1,7 +1,9 @@
 package com.example.tasks.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -11,7 +13,17 @@ import java.time.LocalDateTime;
 @Builder
 public class StatusTypeDTO {
     private String statusTypeId;
+
+    @NotBlank
     private String statusName;
-    private String createdBy;
+
     private LocalDateTime creationDate;
+
+    private String createdBy;
+
+    private LocalDateTime lastUpdateDate;
+
+    private String lastUpdatedBy;
+
+    private String createdByFullname;
 }
