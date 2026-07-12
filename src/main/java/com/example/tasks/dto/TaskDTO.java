@@ -1,9 +1,8 @@
 package com.example.tasks.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -15,17 +14,18 @@ import java.time.LocalDateTime;
 @Builder
 public class TaskDTO {
 
-    @NotNull
-    private Long id;
+    private Long taskId;
 
     @NotBlank
-    private String content;
+    private String name;
 
     @NotNull
     private LocalDateTime dueDate;
 
     @NotBlank
-    private String status;
+    private String statusTypeId;
+
+    private Long userId;
 
     private String createdBy;
 

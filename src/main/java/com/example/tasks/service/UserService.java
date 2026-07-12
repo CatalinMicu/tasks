@@ -48,7 +48,13 @@ public class UserService {
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
         User user = userMapper.toEntity(userDTO);
-        applyDefaults(user);
+
+        user.setIsInternal(1);
+        user.setCreationDate(LocalDateTime.now());
+        user.setCreatedBy("system");
+        user.setLastUpdateDate(LocalDateTime.now());
+        user.setLastUpdatedBy("system");
+
         User savedUser = userRepository.save(user);
         log.info("User created with id {}", savedUser.getUserId());
         return userMapper.toDto(savedUser);

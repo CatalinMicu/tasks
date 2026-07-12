@@ -80,8 +80,8 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/status")
-    public TaskDTO updateTaskStatus(@PathVariable Long id, @RequestParam String status) {
-        return taskService.updateTaskStatus(id, status);
+    public TaskDTO updateTaskStatus(@PathVariable Long id, @RequestParam String statusTypeId) {
+        return taskService.updateTaskStatus(id, statusTypeId);
     }
 
 }

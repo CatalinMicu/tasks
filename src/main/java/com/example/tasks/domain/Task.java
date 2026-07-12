@@ -1,7 +1,6 @@
 package com.example.tasks.domain;
 
 
-import com.example.tasks.controller.StatusTypeController;
 import jakarta.persistence.*;
 import lombok.*;
 
