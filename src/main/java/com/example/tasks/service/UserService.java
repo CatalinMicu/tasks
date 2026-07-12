@@ -3,6 +3,7 @@ package com.example.tasks.service;
 import com.example.tasks.domain.User;
 import com.example.tasks.dto.UserDTO;
 import com.example.tasks.mapper.UserMapper;
+import com.example.tasks.repository.TaskRepository;
 import com.example.tasks.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     private final UserMapper userMapper;
 
 
@@ -58,6 +60,7 @@ public class UserService {
             log.warn("User not found with id {}", id);
             return;
         }
+        taskRepository.deleteAll(taskRepository.findAllByUser_UserId(id));
         userRepository.deleteById(id);
         log.info("User deleted with id {}", id);
     }
