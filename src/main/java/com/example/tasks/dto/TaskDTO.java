@@ -27,4 +27,6 @@ public class TaskDTO {
     @NotBlank
     private String status;
 
+    private String createdBy;
+
 }

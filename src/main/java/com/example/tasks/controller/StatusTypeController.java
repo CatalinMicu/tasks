@@ -26,6 +26,11 @@ public class StatusTypeController {
         return statusTypeService.createStatus(statusTypeDTO);
     }
 
+    @PatchMapping("/{id}")
+    public StatusTypeDTO updateStatus(@PathVariable String id, @RequestBody StatusTypeDTO statusTypeDTO) {
+        return statusTypeService.updateStatus(id, statusTypeDTO);
+    }
+
     @DeleteMapping("/{id}")
     public void deleteStatus(@PathVariable String id) {
         statusTypeService.deleteStatus(id);

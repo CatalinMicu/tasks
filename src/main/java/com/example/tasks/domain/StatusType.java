@@ -3,7 +3,6 @@ package com.example.tasks.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import tools.jackson.databind.annotation.JsonAppend;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.List;
 public class StatusType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "status_type_id")
     private String statusTypeId;
 

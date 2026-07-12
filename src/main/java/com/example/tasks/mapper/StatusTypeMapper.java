@@ -10,15 +10,22 @@ public class StatusTypeMapper {
         return StatusTypeDTO.builder()
                 .statusTypeId(statusType.getStatusTypeId())
                 .statusName(statusType.getStatusName())
-                .createdBy(statusType.getCreatedBy())
                 .creationDate(statusType.getCreationDate())
+                .createdBy(statusType.getCreatedBy())
+                .lastUpdateDate(statusType.getLastUpdateDate())
+                .lastUpdatedBy(statusType.getLastUpdatedBy())
+                .createdByFullname(statusType.getCreatedByFullName())
                 .build();
     }
 
     public StatusType toEntity(StatusTypeDTO statusTypeDTO) {
         return StatusType.builder()
                 .statusName(statusTypeDTO.getStatusName())
+                .creationDate(statusTypeDTO.getCreationDate())
                 .createdBy(statusTypeDTO.getCreatedBy())
+                .lastUpdateDate(statusTypeDTO.getLastUpdateDate())
+                .lastUpdatedBy(statusTypeDTO.getLastUpdatedBy())
+                .createdByFullName(statusTypeDTO.getCreatedByFullname())
                 .build();
     }
 }

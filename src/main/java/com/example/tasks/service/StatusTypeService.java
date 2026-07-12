@@ -28,6 +28,30 @@ public class StatusTypeService {
                 .toList();
     }
 
+    public StatusTypeDTO getStatusById(String id) {
+        StatusType status = statusTypeRepository.findById(id).orElse(null);
+        if (status == null) {
+            log.warn("Status type not found with id {}", id);
+            return null;
+        }
+        return statusMapper.toDto(status);
+    }
+
+    public StatusTypeDTO updateStatus(String id, StatusTypeDTO statusTypeDTO) {
+        StatusType status = statusTypeRepository.findById(id).orElse(null);
+        if (status == null) {
+            log.warn("Status type not found with id {}", id);
+            return null;
+        }
+        status.setStatusName(statusTypeDTO.getStatusName());
+        status.setCreationDate(statusTypeDTO.getCreationDate());
+        status.setCreatedBy(statusTypeDTO.getCreatedBy());
+        status.setLastUpdateDate(statusTypeDTO.getLastUpdateDate());
+        status.setLastUpdatedBy(statusTypeDTO.getLastUpdatedBy());
+
+        StatusType updatedStatus = statusTypeRepository.save(status);
+        return statusMapper.toDto(updatedStatus);
+    }
 
     @Transactional
     public StatusTypeDTO createStatus(@Valid StatusTypeDTO statusTypeDTO) {
