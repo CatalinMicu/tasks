@@ -15,6 +15,10 @@ public class StatusTypeController {
         this.statusTypeService = statusTypeService;
     }
 
+    @GetMapping("/{id}")
+    public StatusTypeDTO getStatusById(@PathVariable String id) {
+        return statusTypeService.getStatusById(id);
+    }
 
     @GetMapping
     public List<StatusTypeDTO> getAllStatuses() {

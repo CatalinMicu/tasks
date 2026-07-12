@@ -28,6 +28,7 @@ public class StatusTypeService {
                 .toList();
     }
 
+
     public StatusTypeDTO getStatusById(String id) {
         StatusType status = statusTypeRepository.findById(id).orElse(null);
         if (status == null) {
