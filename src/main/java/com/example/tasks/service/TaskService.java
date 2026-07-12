@@ -126,4 +126,11 @@ public class TaskService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
+
+    public List<TaskDTO> getTasksByUserAndStatus(Long userId, String statusTypeId) {
+        return taskRepository.findByUserAndStatus(userId, statusTypeId)
+                .stream()
+                .map(taskMapper::toDto)
+                .toList();
+    }
 }

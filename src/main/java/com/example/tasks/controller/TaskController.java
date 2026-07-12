@@ -84,4 +84,12 @@ public class TaskController {
         return taskService.updateTaskStatus(id, statusTypeId);
     }
 
+    @GetMapping("/user/{userId}/status/{statusTypeId}")
+    public List<TaskDTO> getTasksByUserAndStatus(
+            @PathVariable Long userId,
+            @PathVariable String statusTypeId
+    ) {
+        return taskService.getTasksByUserAndStatus(userId, statusTypeId);
+    }
+
 }
