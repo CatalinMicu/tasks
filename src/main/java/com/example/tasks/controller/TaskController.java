@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
+@CrossOrigin
 public class TaskController {
     private final TaskService taskService;
 
@@ -80,16 +81,16 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/status")
-    public TaskDTO updateTaskStatus(@PathVariable Long id, @RequestParam String statusTypeId) {
-        return taskService.updateTaskStatus(id, statusTypeId);
+    public TaskDTO updateTaskStatus(@PathVariable Long id, @RequestParam String statusName) {
+        return taskService.updateTaskStatus(id, statusName);
     }
 
-    @GetMapping("/user/{userId}/status/{statusTypeId}")
+    @GetMapping("/user/{userId}/status/{statusName}")
     public List<TaskDTO> getTasksByUserAndStatus(
             @PathVariable Long userId,
-            @PathVariable String statusTypeId
+            @PathVariable String statusName
     ) {
-        return taskService.getTasksByUserAndStatus(userId, statusTypeId);
+        return taskService.getTasksByUserAndStatus(userId, statusName);
     }
 
 }

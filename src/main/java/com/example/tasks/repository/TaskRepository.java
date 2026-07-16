@@ -16,11 +16,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
        SELECT t
        FROM Task t
        WHERE t.user.userId = :userId
-       AND t.statusType.statusTypeId = :statusTypeId
+       AND LOWER(t.statusType.statusName) = LOWER(:statusName)
        ORDER BY t.dueDate ASC
        """)
     List<Task> findByUserAndStatus(
             @Param("userId") Long userId,
-            @Param("statusTypeId") String statusTypeId
+            @Param("statusName") String statusName
     );
 }

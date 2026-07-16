@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class StatusTypeDTO {
+
+
     private String statusTypeId;
 
     @NotBlank

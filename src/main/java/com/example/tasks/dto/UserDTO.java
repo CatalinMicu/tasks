@@ -28,6 +28,9 @@ public class UserDTO {
 
     private String lastUpdatedBy;
 
+    private String password;
+
+    private String email;
 
     private String createdByFullname;
 

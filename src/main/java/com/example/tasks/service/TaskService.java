@@ -34,7 +34,7 @@ public class TaskService {
 
     @Transactional
     public TaskDTO addTask(TaskDTO taskDTO) {
-        Task task = taskMapper.toEntity(taskDTO, findUser(taskDTO.getUserId()), findStatus(taskDTO.getStatusTypeId()));
+        Task task = taskMapper.toEntity(taskDTO, findUser(taskDTO.getUserId()), findStatusByName(taskDTO.getStatusName()));
         if (task.getCreatedBy() == null || task.getCreatedBy().isBlank()) {
             task.setCreatedBy("system");
         }
@@ -55,20 +55,20 @@ public class TaskService {
 
         task.setName(taskDTO.getName());
         task.setDueDate(taskDTO.getDueDate());
-        task.setStatusType(findStatus(taskDTO.getStatusTypeId()));
+        task.setStatusType(findStatusByName(taskDTO.getStatusName()));
         task.setUser(findUser(taskDTO.getUserId()));
 
         return taskMapper.toDto(taskRepository.save(task));
     }
 
     @Transactional
-    public TaskDTO updateTaskStatus(Long id, String statusTypeId) {
+    public TaskDTO updateTaskStatus(Long id, String statusName) {
         Task task = taskRepository.findById(id).orElse(null);
         if (task == null) {
             return null;
         }
 
-        task.setStatusType(findStatus(statusTypeId));
+        task.setStatusType(findStatusByName(statusName));
         return taskMapper.toDto(taskRepository.save(task));
     }
 
@@ -90,9 +90,9 @@ public class TaskService {
                 .toList();
     }
 
-    public List<TaskDTO> getTasksByStatus(String statusTypeId) {
+    public List<TaskDTO> getTasksByStatus(String statusName) {
         return getTasks().stream()
-                .filter(task -> statusTypeId.equalsIgnoreCase(task.getStatusTypeId()))
+                .filter(task -> statusName.equalsIgnoreCase(task.getStatusName()))
                 .toList();
     }
 
@@ -114,9 +114,9 @@ public class TaskService {
                 .toList();
     }
 
-    private StatusType findStatus(String statusTypeId) {
-        return statusTypeRepository.findById(statusTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Status type not found: " + statusTypeId));
+    private StatusType findStatusByName(String statusName) {
+        return statusTypeRepository.findFirstByStatusNameIgnoreCase(statusName.trim())
+                .orElseThrow(() -> new IllegalArgumentException("Status not found: " + statusName));
     }
 
     private User findUser(Long userId) {
@@ -127,8 +127,8 @@ public class TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
 
-    public List<TaskDTO> getTasksByUserAndStatus(Long userId, String statusTypeId) {
-        return taskRepository.findByUserAndStatus(userId, statusTypeId)
+    public List<TaskDTO> getTasksByUserAndStatus(Long userId, String statusName) {
+        return taskRepository.findByUserAndStatus(userId, statusName)
                 .stream()
                 .map(taskMapper::toDto)
                 .toList();

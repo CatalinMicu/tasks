@@ -9,6 +9,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.example.tasks.dto.CredentialsDTO;
+import com.example.tasks.dto.ResponseDTO;
+import com.example.tasks.service.AuthentificationService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final UserMapper userMapper;
+    private final AuthentificationService authentificationService;
 
 
     public List<UserDTO> getAllUsers() {
@@ -48,7 +52,7 @@ public class UserService {
     public UserDTO createUser(UserDTO userDTO) {
         User user = userMapper.toEntity(userDTO);
 
-        user.setIsInternal(1);
+        user.setIsInternal(0);
         user.setCreationDate(LocalDateTime.now());
         user.setCreatedBy("system");
         user.setLastUpdateDate(LocalDateTime.now());

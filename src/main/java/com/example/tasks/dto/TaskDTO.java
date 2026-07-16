@@ -23,7 +23,7 @@ public class TaskDTO {
     private LocalDate dueDate;
 
     @NotBlank
-    private String statusTypeId;
+    private String statusName;
 
     private Long userId;
 

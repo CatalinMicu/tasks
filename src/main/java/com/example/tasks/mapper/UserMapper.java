@@ -17,6 +17,7 @@ public class UserMapper {
                 .lastUpdateDate(user.getLastUpdateDate())
                 .lastUpdatedBy(user.getLastUpdatedBy())
                 .createdByFullname(user.getCreatedByFullName())
+                .email(user.getEmail())
                 .build();
     }
 
@@ -31,6 +32,8 @@ public class UserMapper {
                 .lastUpdateDate(userDTO.getLastUpdateDate())
                 .lastUpdatedBy(userDTO.getLastUpdatedBy())
                 .createdByFullName(userDTO.getCreatedByFullname())
+                .email(userDTO.getEmail())
+                .password(userDTO.getPassword())
                 .build();
 
     }

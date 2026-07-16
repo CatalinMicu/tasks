@@ -18,7 +18,7 @@ import java.util.List;
 public class StatusType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.UUID) //sys_guid
     @Column(name = "status_type_id")
     private String statusTypeId;
 

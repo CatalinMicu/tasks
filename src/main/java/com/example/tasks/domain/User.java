@@ -51,6 +51,12 @@ public class User {
     @Column(name = "created_by_fullname")
     private String createdByFullName;
 
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "email")
+    private String email;
+
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     @Builder.Default

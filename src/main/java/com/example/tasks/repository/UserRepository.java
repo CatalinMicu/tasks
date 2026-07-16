@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -16,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
        WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%'))
        """)
     List<User> searchByUsername(@Param("username") String username);
+
+    Optional<User> findByEmail(String email);
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/statuses")
+@CrossOrigin
 public class StatusTypeController {
     private final StatusTypeService statusTypeService;
 
