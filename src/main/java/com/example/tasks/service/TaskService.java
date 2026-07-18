@@ -96,10 +96,23 @@ public class TaskService {
                 .toList();
     }
 
-    public List<TaskDTO> searchTasks(String keyword) {
-        String normalized = keyword == null ? "" : keyword.trim().toLowerCase();
+    public List<TaskDTO> searchTasks(String assignedTo, String subject, LocalDate dueDate, String status) {
         return getTasks().stream()
-                .filter(task -> task.getName() != null && task.getName().toLowerCase().contains(normalized))
+                .filter(task -> {
+                    if (assignedTo != null && !assignedTo.isBlank()) {
+                        if (task.getCreatedBy() == null || !task.getCreatedBy().toLowerCase().contains(assignedTo.toLowerCase())) return false;
+                    }
+                    if (subject != null && !subject.isBlank()) {
+                        if (task.getName() == null || !task.getName().toLowerCase().contains(subject.toLowerCase())) return false;
+                    }
+                    if (dueDate != null) {
+                        if (task.getDueDate() == null || !task.getDueDate().equals(dueDate)) return false;
+                    }
+                    if (status != null && !status.isBlank()) {
+                        if (task.getStatusName() == null || !task.getStatusName().equalsIgnoreCase(status)) return false;
+                    }
+                    return true;
+                })
                 .toList();
     }
 

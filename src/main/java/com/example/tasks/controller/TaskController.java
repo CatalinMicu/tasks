@@ -41,8 +41,13 @@ public class TaskController {
     }
 
     @GetMapping("/search")
-    public List<TaskDTO> searchTasks(@RequestParam String keyword) {
-        return taskService.searchTasks(keyword);
+    public List<TaskDTO> searchTasks(
+            @RequestParam(required = false) String assignedTo,
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate,
+            @RequestParam(required = false) String status
+    ) {
+        return taskService.searchTasks(assignedTo, subject, dueDate, status);
     }
 
     @GetMapping("/count")
