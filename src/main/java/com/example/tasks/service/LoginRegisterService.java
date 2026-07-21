@@ -2,6 +2,7 @@ package com.example.tasks.service;
 
 import com.example.tasks.domain.User;
 import com.example.tasks.dto.CredentialsDTO;
+import com.example.tasks.dto.RegisterDTO;
 import com.example.tasks.repository.UserRepository;
 import org.eclipse.jetty.util.security.Credential;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Service
@@ -55,6 +58,33 @@ public class LoginRegisterService {
         } else {
             return "403: Unauthorized";
         }
+
+    }
+
+    public String register(RegisterDTO registerDTO) throws JoseException {
+        registerDTO.setEmail(new String(Base64.getDecoder().decode(registerDTO.getEmail())));
+        registerDTO.setPassword(new String(Base64.getDecoder().decode(registerDTO.getPassword())));
+
+        if (userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
+            return "409: Email already exists";
+        }
+
+        String hashPassword = Credential.MD5.digest(registerDTO.getPassword());
+
+        User user = User.builder()
+                .email(registerDTO.getEmail())
+                .username(registerDTO.getUsername())
+                .password(hashPassword)
+                .birthDate(registerDTO.getBirthDate())
+                .creationDate(LocalDateTime.now())
+                .createdBy("system")
+                .lastUpdateDate(LocalDateTime.now())
+                .lastUpdatedBy("system")
+                .isInternal(0)
+                .build();
+
+        userRepository.save(user);
+        return createJWToken();
 
     }
 
