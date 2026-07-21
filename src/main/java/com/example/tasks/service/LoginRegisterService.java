@@ -10,6 +10,8 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.keys.AesKey;
 import org.jose4j.lang.JoseException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -31,7 +33,7 @@ public class LoginRegisterService {
         this.userRepository = userRepository;
     }
 
-    public String login(CredentialsDTO credentialsDTO) throws JoseException {
+    public ResponseEntity<String> login(CredentialsDTO credentialsDTO) throws JoseException {
         credentialsDTO.setEmail(new String(Base64.getDecoder().decode(credentialsDTO.getEmail())));
         credentialsDTO.setPassword(new String(Base64.getDecoder().decode(credentialsDTO.getPassword())));
 
@@ -49,24 +51,24 @@ public class LoginRegisterService {
 
         if (dbPassword != null && hashPassword.equals(dbPassword.getPassword())) {
             try {
-                return createJWToken();
+                return ResponseEntity.ok(createJWToken());
             } catch (Exception e) {
                 System.out.println("JWT ERROR: " + e.getMessage());
                 e.printStackTrace();
-                return "500: JWT creation failed - " + e.getMessage();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
             }
         } else {
-            return "403: Unauthorized";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid credentials");
         }
 
     }
 
-    public String register(RegisterDTO registerDTO) throws JoseException {
+    public ResponseEntity<String> register(RegisterDTO registerDTO) throws JoseException {
         registerDTO.setEmail(new String(Base64.getDecoder().decode(registerDTO.getEmail())));
         registerDTO.setPassword(new String(Base64.getDecoder().decode(registerDTO.getPassword())));
 
         if (userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
-            return "409: Email already exists";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
 
         String hashPassword = Credential.MD5.digest(registerDTO.getPassword());
@@ -84,7 +86,7 @@ public class LoginRegisterService {
                 .build();
 
         userRepository.save(user);
-        return createJWToken();
+        return  ResponseEntity.ok(createJWToken());
 
     }
 

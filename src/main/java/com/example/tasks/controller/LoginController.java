@@ -4,6 +4,7 @@ import com.example.tasks.dto.CredentialsDTO;
 import com.example.tasks.service.LoginRegisterService;
 import lombok.RequiredArgsConstructor;
 import org.jose4j.lang.JoseException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +16,7 @@ public class LoginController {
     private final LoginRegisterService loginRegisterService;
 
     @PostMapping
-    public String login(@RequestBody CredentialsDTO credentialsDTO) throws JoseException {
+    public ResponseEntity<String> login(@RequestBody CredentialsDTO credentialsDTO) throws JoseException {
         return loginRegisterService.login(credentialsDTO);
     }
 }
