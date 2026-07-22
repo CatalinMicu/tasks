@@ -71,7 +71,8 @@ public class LoginRegisterService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
 
-        String hashPassword = Credential.MD5.digest(registerDTO.getPassword());
+        String plainPassword = registerDTO.getPassword().replaceFirst("MD5:", "");
+        String hashPassword = Credential.MD5.digest(plainPassword);
 
         User user = User.builder()
                 .email(registerDTO.getEmail())
