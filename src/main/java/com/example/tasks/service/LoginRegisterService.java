@@ -51,7 +51,7 @@ public class LoginRegisterService {
 
         if (dbPassword != null && hashPassword.equals(dbPassword.getPassword())) {
             try {
-                return ResponseEntity.ok(createJWToken());
+                return ResponseEntity.ok(createJWToken(userRepository.findByEmail(credentialsDTO.getEmail()).get().getUserId(), userRepository.findByEmail(credentialsDTO.getEmail()).get().getUsername(), userRepository.findByEmail(credentialsDTO.getEmail()).get().getEmail()));
             } catch (Exception e) {
                 System.out.println("JWT ERROR: " + e.getMessage());
                 e.printStackTrace();
@@ -87,15 +87,19 @@ public class LoginRegisterService {
                 .build();
 
         userRepository.save(user);
-        return  ResponseEntity.ok(createJWToken());
+        return  ResponseEntity.ok(createJWToken(user.getUserId(), user.getUsername(), user.getEmail()));
 
     }
 
-    private String createJWToken() throws JoseException {
+    private String createJWToken(Long userId, String username, String email) throws JoseException {
         JwtClaims claims = new JwtClaims();
         claims.setIssuedAtToNow();
         claims.setExpirationTimeMinutesInTheFuture((float) Long.parseLong(jwtExpiration) / 1000 / 60);
         JsonWebSignature jws = new JsonWebSignature();
+        claims.setClaim("userId", userId);
+        claims.setClaim("username", username);
+        claims.setClaim("email", email);
+
         jws.setPayload(claims.toJson());
         jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.HMAC_SHA256);
         jws.setKey(new AesKey(jwtSecret.getBytes(StandardCharsets.UTF_8)));
