@@ -27,6 +27,8 @@ public class TaskDTO {
 
     private Long userId;
 
+    private String assignedTo;
+
     private String createdBy;
 
 }

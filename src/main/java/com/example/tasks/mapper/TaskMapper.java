@@ -16,6 +16,7 @@ public class TaskMapper {
                 .dueDate(task.getDueDate())
                 .statusName(task.getStatusType() == null ? null : task.getStatusType().getStatusName())
                 .userId(task.getUser() == null ? null : task.getUser().getUserId())
+                .assignedTo(task.getUser() == null ? null : task.getUser().getUsername())
                 .createdBy(task.getCreatedBy())
                 .build();
     }

@@ -100,7 +100,7 @@ public class TaskService {
         return getTasks().stream()
                 .filter(task -> {
                     if (assignedTo != null && !assignedTo.isBlank()) {
-                        if (task.getCreatedBy() == null || !task.getCreatedBy().toLowerCase().contains(assignedTo.toLowerCase())) return false;
+                        if (task.getAssignedTo() == null || !task.getAssignedTo().toLowerCase().contains(assignedTo.toLowerCase())) return false;
                     }
                     if (subject != null && !subject.isBlank()) {
                         if (task.getName() == null || !task.getName().toLowerCase().contains(subject.toLowerCase())) return false;
