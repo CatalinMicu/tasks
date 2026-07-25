@@ -1,9 +1,6 @@
 package com.example.tasks.controller;
 
-import com.example.tasks.dto.CredentialsDTO;
-import com.example.tasks.dto.ResponseDTO;
 import com.example.tasks.dto.UserDTO;
-import com.example.tasks.service.AuthentificationService;
 import com.example.tasks.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +13,9 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final AuthentificationService authentificationService;
 
-    public UserController(UserService userService, AuthentificationService authentificationService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.authentificationService = authentificationService;
     }
 
     @GetMapping
@@ -36,11 +31,6 @@ public class UserController {
     @PostMapping
     public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
         return userService.createUser(userDTO);
-    }
-
-    @PostMapping("/login")
-    public ResponseDTO login(@RequestBody CredentialsDTO credentials) {
-        return authentificationService.authenticate(credentials);
     }
 
     @PutMapping("/{id}")
