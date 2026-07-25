@@ -39,19 +39,25 @@ public class LoginRegisterService {
 
         String plainPassword = credentialsDTO.getPassword().replaceFirst("MD5:", "");
         String hashPassword = Credential.MD5.digest(plainPassword);
-        User dbPassword = userRepository.findByEmail(credentialsDTO.getEmail()).orElse(null);
+        User user = userRepository.findByEmail(credentialsDTO.getEmail()).orElse(null);
 
-        System.out.println("=== LOGIN DEBUG ===");
+
         System.out.println("Email decoded: " + credentialsDTO.getEmail());
         System.out.println("Password decoded: " + credentialsDTO.getPassword());
         System.out.println("After replaceFirst: " + plainPassword);
         System.out.println("Computed hash: " + hashPassword);
-        System.out.println("DB hash: " + (dbPassword != null ? dbPassword.getPassword() : "USER NOT FOUND"));
-        System.out.println("Match: " + (dbPassword != null && hashPassword.equals(dbPassword.getPassword())));
+        System.out.println("DB hash: " + (user != null ? user.getPassword() : "USER NOT FOUND"));
+        System.out.println("Match: " + (user != null && hashPassword.equals(user.getPassword())));
 
-        if (dbPassword != null && hashPassword.equals(dbPassword.getPassword())) {
+        if (user != null && hashPassword.equals(user.getPassword())) {
             try {
-                return ResponseEntity.ok(createJWToken(userRepository.findByEmail(credentialsDTO.getEmail()).get().getUserId(), userRepository.findByEmail(credentialsDTO.getEmail()).get().getUsername(), userRepository.findByEmail(credentialsDTO.getEmail()).get().getEmail()));
+                return ResponseEntity.ok(
+                        createJWToken(
+                                user.getUserId(),
+                                user.getUsername(),
+                                user.getEmail()
+                        )
+                );
             } catch (Exception e) {
                 System.out.println("JWT ERROR: " + e.getMessage());
                 e.printStackTrace();
