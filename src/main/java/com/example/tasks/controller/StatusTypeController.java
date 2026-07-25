@@ -2,6 +2,7 @@ package com.example.tasks.controller;
 
 import com.example.tasks.dto.StatusTypeDTO;
 import com.example.tasks.service.StatusTypeService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,12 +28,12 @@ public class StatusTypeController {
     }
 
     @PostMapping
-    public StatusTypeDTO createStatus(@RequestBody StatusTypeDTO statusTypeDTO) {
+    public StatusTypeDTO createStatus(@Valid @RequestBody StatusTypeDTO statusTypeDTO) {
         return statusTypeService.createStatus(statusTypeDTO);
     }
 
     @PatchMapping("/{id}")
-    public StatusTypeDTO updateStatus(@PathVariable String id, @RequestBody StatusTypeDTO statusTypeDTO) {
+    public StatusTypeDTO updateStatus(@PathVariable String id, @Valid @RequestBody StatusTypeDTO statusTypeDTO) {
         return statusTypeService.updateStatus(id, statusTypeDTO);
     }
 
