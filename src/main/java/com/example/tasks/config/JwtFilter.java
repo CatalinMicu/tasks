@@ -46,6 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 String username = (String) claims.getClaimValue("username");
                 String email = (String) claims.getClaimValue("email");
 
+
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(userId, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(auth);

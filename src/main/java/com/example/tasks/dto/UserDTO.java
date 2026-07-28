@@ -34,4 +34,6 @@ public class UserDTO {
 
     private String createdByFullname;
 
+    private String roleName;
+
 }

@@ -1,8 +1,10 @@
 package com.example.tasks.service;
 
+import com.example.tasks.domain.Roles;
 import com.example.tasks.domain.User;
 import com.example.tasks.dto.UserDTO;
 import com.example.tasks.mapper.UserMapper;
+import com.example.tasks.repository.RoleRepository;
 import com.example.tasks.repository.TaskRepository;
 import com.example.tasks.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,6 +22,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final TaskRepository taskRepository;
     private final UserMapper userMapper;
 
@@ -47,7 +50,10 @@ public class UserService {
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
         User user = userMapper.toEntity(userDTO);
+        Roles userRole = roleRepository.findByRoleName("USER")
+                .orElseThrow(() -> new IllegalStateException("Role USER not found"));
 
+        user.setRole(userRole);
         user.setIsInternal(0);
         user.setCreationDate(LocalDateTime.now());
         user.setCreatedBy("system");
@@ -88,10 +94,25 @@ public class UserService {
     }
 
     public List<UserDTO> searchByUsername(String username) {
-        return userRepository.searchByUsername(username)
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
+        List<UserDTO> users = new ArrayList<>();
+
+        for (User user : userRepository.searchByUsername(username)) {
+            users.add(userMapper.toDto(user));
+        }
+
+        return users;
+    }
+
+    public UserDTO updateRole(Long id, String roleName) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            log.warn("User not found with id {}", id);
+            return null;
+        }
+        Roles role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new IllegalStateException("Role " + roleName + " not found"));
+        user.setRole(role);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     private void applyDefaults(User user) {

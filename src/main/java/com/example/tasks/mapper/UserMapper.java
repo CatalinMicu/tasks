@@ -18,6 +18,7 @@ public class UserMapper {
                 .lastUpdatedBy(user.getLastUpdatedBy())
                 .createdByFullname(user.getCreatedByFullName())
                 .email(user.getEmail())
+                .roleName(user.getRole().getRoleName())
                 .build();
     }
 

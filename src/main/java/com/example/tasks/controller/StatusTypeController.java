@@ -3,6 +3,7 @@ package com.example.tasks.controller;
 import com.example.tasks.dto.StatusTypeDTO;
 import com.example.tasks.service.StatusTypeService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,16 +29,19 @@ public class StatusTypeController {
     }
 
     @PostMapping
+    @PreAuthorize("@permissionChecker.isAdmin()")
     public StatusTypeDTO createStatus(@Valid @RequestBody StatusTypeDTO statusTypeDTO) {
         return statusTypeService.createStatus(statusTypeDTO);
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@permissionChecker.isAdmin()")
     public StatusTypeDTO updateStatus(@PathVariable String id, @Valid @RequestBody StatusTypeDTO statusTypeDTO) {
         return statusTypeService.updateStatus(id, statusTypeDTO);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@permissionChecker.isAdmin()")
     public void deleteStatus(@PathVariable String id) {
         statusTypeService.deleteStatus(id);
     }

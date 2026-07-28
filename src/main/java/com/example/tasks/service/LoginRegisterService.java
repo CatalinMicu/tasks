@@ -1,8 +1,10 @@
 package com.example.tasks.service;
 
+import com.example.tasks.domain.Roles;
 import com.example.tasks.domain.User;
 import com.example.tasks.dto.CredentialsDTO;
 import com.example.tasks.dto.RegisterDTO;
+import com.example.tasks.repository.RoleRepository;
 import com.example.tasks.repository.UserRepository;
 import org.eclipse.jetty.util.security.Credential;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -23,14 +25,18 @@ import java.util.Base64;
 @Service
 public class LoginRegisterService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Value("${jwt.secret}")
     String jwtSecret;
     @Value(("${jwt.expiration.ms}"))
     String jwtExpiration;
 
-    public LoginRegisterService(UserRepository userRepository) {
+
+
+    public LoginRegisterService(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     public ResponseEntity<String> login(CredentialsDTO credentialsDTO) throws JoseException {
@@ -55,7 +61,8 @@ public class LoginRegisterService {
                         createJWToken(
                                 user.getUserId(),
                                 user.getUsername(),
-                                user.getEmail()
+                                user.getEmail(),
+                                user.getRole().getRoleName()
                         )
                 );
             } catch (Exception e) {
@@ -79,12 +86,15 @@ public class LoginRegisterService {
 
         String plainPassword = registerDTO.getPassword().replaceFirst("MD5:", "");
         String hashPassword = Credential.MD5.digest(plainPassword);
+        Roles userRole = roleRepository.findByRoleName("USER")
+                .orElseThrow(() -> new IllegalStateException("Role USER not found"));
 
         User user = User.builder()
                 .email(registerDTO.getEmail())
                 .username(registerDTO.getUsername())
                 .password(hashPassword)
                 .birthDate(registerDTO.getBirthDate())
+                .role(userRole)
                 .creationDate(LocalDateTime.now())
                 .createdBy("system")
                 .lastUpdateDate(LocalDateTime.now())
@@ -93,11 +103,16 @@ public class LoginRegisterService {
                 .build();
 
         userRepository.save(user);
-        return  ResponseEntity.ok(createJWToken(user.getUserId(), user.getUsername(), user.getEmail()));
+        return ResponseEntity.ok(createJWToken(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().getRoleName()
+        ));
 
     }
 
-    private String createJWToken(Long userId, String username, String email) throws JoseException {
+    private String createJWToken(Long userId, String username, String email, String role) throws JoseException {
         JwtClaims claims = new JwtClaims();
         claims.setIssuedAtToNow();
         claims.setExpirationTimeMinutesInTheFuture((float) Long.parseLong(jwtExpiration) / 1000 / 60);
@@ -105,6 +120,8 @@ public class LoginRegisterService {
         claims.setClaim("userId", userId);
         claims.setClaim("username", username);
         claims.setClaim("email", email);
+        claims.setClaim("role", role);
+
 
         jws.setPayload(claims.toJson());
         jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.HMAC_SHA256);
