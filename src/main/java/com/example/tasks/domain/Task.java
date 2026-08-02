@@ -29,6 +29,9 @@ public class Task {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Column(name = "body")
+    private String body;
+
     @ManyToOne
     @JoinColumn(name = "status_type_id")
     private StatusType statusType;

@@ -48,13 +48,6 @@ public class LoginRegisterService {
         User user = userRepository.findByEmail(credentialsDTO.getEmail()).orElse(null);
 
 
-        System.out.println("Email decoded: " + credentialsDTO.getEmail());
-        System.out.println("Password decoded: " + credentialsDTO.getPassword());
-        System.out.println("After replaceFirst: " + plainPassword);
-        System.out.println("Computed hash: " + hashPassword);
-        System.out.println("DB hash: " + (user != null ? user.getPassword() : "USER NOT FOUND"));
-        System.out.println("Match: " + (user != null && hashPassword.equals(user.getPassword())));
-
         if (user != null && hashPassword.equals(user.getPassword())) {
             try {
                 return ResponseEntity.ok(

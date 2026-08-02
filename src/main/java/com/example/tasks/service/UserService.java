@@ -10,6 +10,7 @@ import com.example.tasks.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -108,6 +109,9 @@ public class UserService {
         if (user == null) {
             log.warn("User not found with id {}", id);
             return null;
+        }
+        if ("ADMIN".equalsIgnoreCase(user.getRole().getRoleName())) {
+            throw new AccessDeniedException("The role of an ADMIN cannot be changed");
         }
         Roles role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new IllegalStateException("Role " + roleName + " not found"));

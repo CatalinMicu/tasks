@@ -27,6 +27,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
     private final PermissionChecker permissionChecker;
+    private final NotificationService notificationService;
 
     public List<TaskDTO> getTasks() {
         requirePermission("READ");
@@ -60,10 +61,18 @@ public class TaskService {
     public TaskDTO addTask(TaskDTO taskDTO) {
         requirePermission("CREATE");
         Task task = taskMapper.toEntity(taskDTO, findUser(taskDTO.getUserId()), findStatusByName(taskDTO.getStatusName()));
-        if (task.getCreatedBy() == null || task.getCreatedBy().isBlank()) {
-            task.setCreatedBy("system");
-        }
-        return taskMapper.toDto(taskRepository.save(task));
+        User currentAdmin = permissionChecker.getCurrentUser();
+        task.setCreatedBy(currentAdmin.getEmail());
+
+        Task savedTask = taskRepository.save(task);
+
+        notificationService.createNotification(
+                savedTask.getUser().getUserId(),
+                savedTask.getTaskId(),
+                "You have been assigned a new task: " + savedTask.getName()
+        );
+
+        return taskMapper.toDto(savedTask);
     }
 
     @Transactional
@@ -89,6 +98,7 @@ public class TaskService {
         task.setDueDate(taskDTO.getDueDate());
         task.setStatusType(findStatusByName(taskDTO.getStatusName()));
         task.setUser(findUser(taskDTO.getUserId()));
+        task.setBody(taskDTO.getBody());
 
         return taskMapper.toDto(taskRepository.save(task));
     }

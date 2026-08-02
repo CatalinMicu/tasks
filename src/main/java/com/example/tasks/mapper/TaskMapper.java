@@ -10,14 +10,27 @@ import org.springframework.stereotype.Component;
 public class TaskMapper {
 
     public TaskDTO toDto(Task task) {
+        String statusName = null;
+        if (task.getStatusType() != null) {
+            statusName = task.getStatusType().getStatusName();
+        }
+
+        Long userId = null;
+        String assignedTo = null;
+        if (task.getUser() != null) {
+            userId = task.getUser().getUserId();
+            assignedTo = task.getUser().getUsername();
+        }
+
         return TaskDTO.builder()
                 .taskId(task.getTaskId())
                 .name(task.getName())
                 .dueDate(task.getDueDate())
-                .statusName(task.getStatusType() == null ? null : task.getStatusType().getStatusName())
-                .userId(task.getUser() == null ? null : task.getUser().getUserId())
-                .assignedTo(task.getUser() == null ? null : task.getUser().getUsername())
+                .statusName(statusName)
+                .userId(userId)
+                .assignedTo(assignedTo)
                 .createdBy(task.getCreatedBy())
+                .body(task.getBody())
                 .build();
     }
 
@@ -25,9 +38,9 @@ public class TaskMapper {
         return Task.builder()
                 .name(taskDTO.getName())
                 .dueDate(taskDTO.getDueDate())
-                .createdBy(taskDTO.getCreatedBy())
                 .user(user)
                 .statusType(statusType)
+                .body(taskDTO.getBody())
                 .build();
     }
 }
