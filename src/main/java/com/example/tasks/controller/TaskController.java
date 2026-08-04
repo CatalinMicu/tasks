@@ -4,6 +4,7 @@ package com.example.tasks.controller;
 import com.example.tasks.dto.TaskDTO;
 import com.example.tasks.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
-@CrossOrigin
 public class TaskController {
     private final TaskService taskService;
 
@@ -20,24 +20,20 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping
-    public List<TaskDTO> getTasks() {
-        return taskService.getTasks();
+    @GetMapping("/page")
+    public Page<TaskDTO> getTaskPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "mine") String view
+    ) {
+        return taskService.getTaskPage(page, size, sortBy, direction, view);
     }
 
     @GetMapping("/{id}")
     public TaskDTO getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id);
-    }
-
-    @GetMapping("/due-before")
-    public List<TaskDTO> getTasksDueBefore(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return taskService.getTasksDueBefore(date);
-    }
-
-    @GetMapping("/status/{status}")
-    public List<TaskDTO> getTasksByStatus(@PathVariable String status) {
-        return taskService.getTasksByStatus(status);
     }
 
     @GetMapping("/search")
@@ -50,34 +46,14 @@ public class TaskController {
         return taskService.searchTasks(assignedTo, subject, dueDate, status);
     }
 
-    @GetMapping("/count")
-    public long countTasks() {
-        return taskService.countTasks();
-    }
-
-    @GetMapping("/overdue")
-    public List<TaskDTO> getOverdueTasks() {
-        return taskService.getOverdueTasks();
-    }
-
     @DeleteMapping("/{id}")
     public void deleteTaskById(@PathVariable Long id) {
         taskService.deleteTaskById(id);
     }
 
-    @DeleteMapping
-    public void deleteAllTasks() {
-        taskService.deleteAllTasks();
-    }
-
     @PostMapping
     public TaskDTO addTask(@Valid @RequestBody TaskDTO task) {
         return taskService.addTask(task);
-    }
-
-    @PostMapping("/bulk")
-    public List<TaskDTO> addTasks(@Valid @RequestBody List<@Valid TaskDTO> tasks) {
-        return taskService.addTasksFromList(tasks);
     }
 
     @PutMapping("/{id}")
@@ -90,12 +66,47 @@ public class TaskController {
         return taskService.updateTaskStatus(id, statusName);
     }
 
-    @GetMapping("/user/{userId}/status/{statusName}")
-    public List<TaskDTO> getTasksByUserAndStatus(
-            @PathVariable Long userId,
-            @PathVariable String statusName
-    ) {
-        return taskService.getTasksByUserAndStatus(userId, statusName);
-    }
+    // @GetMapping
+    // public List<TaskDTO> getTasks() {
+    //     return taskService.getTasks();
+    // }
+
+    // @GetMapping("/due-before")
+    // public List<TaskDTO> getTasksDueBefore(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    //     return taskService.getTasksDueBefore(date);
+    // }
+
+    // @GetMapping("/status/{status}")
+    // public List<TaskDTO> getTasksByStatus(@PathVariable String status) {
+    //     return taskService.getTasksByStatus(status);
+    // }
+
+    // @GetMapping("/count")
+    // public long countTasks() {
+    //     return taskService.countTasks();
+    // }
+
+    // @GetMapping("/overdue")
+    // public List<TaskDTO> getOverdueTasks() {
+    //     return taskService.getOverdueTasks();
+    // }
+
+    // @DeleteMapping
+    // public void deleteAllTasks() {
+    //     taskService.deleteAllTasks();
+    // }
+
+    // @PostMapping("/bulk")
+    // public List<TaskDTO> addTasks(@Valid @RequestBody List<@Valid TaskDTO> tasks) {
+    //     return taskService.addTasksFromList(tasks);
+    // }
+
+    // @GetMapping("/user/{userId}/status/{statusName}")
+    // public List<TaskDTO> getTasksByUserAndStatus(
+    //         @PathVariable Long userId,
+    //         @PathVariable String statusName
+    // ) {
+    //     return taskService.getTasksByUserAndStatus(userId, statusName);
+    // }
 
 }

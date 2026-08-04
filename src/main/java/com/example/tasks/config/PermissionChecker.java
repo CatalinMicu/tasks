@@ -48,7 +48,7 @@ public class PermissionChecker {
     }
 
     public boolean isAdmin() {
-        return "ADMIN".equalsIgnoreCase(getCurrentUser().getRole().getRoleName());
+        return hasAdminRole(getCurrentUser());
     }
 
     public boolean canAccessTask(Task task, String action) {
@@ -58,7 +58,7 @@ public class PermissionChecker {
             return false;
         }
 
-        if ("ADMIN".equalsIgnoreCase(user.getRole().getRoleName())) {
+        if (hasAdminRole(user)) {
             return true;
         }
 
@@ -69,5 +69,12 @@ public class PermissionChecker {
         return ownsTask &&
                 ("READ".equalsIgnoreCase(action) ||
                         "UPDATE_STATUS".equalsIgnoreCase(action));
+    }
+
+    private boolean hasAdminRole(User user) {
+        String roleName = user.getRole().getRoleName();
+
+        return "ADMIN".equalsIgnoreCase(roleName) ||
+                "SUPER_ADMIN".equalsIgnoreCase(roleName);
     }
 }

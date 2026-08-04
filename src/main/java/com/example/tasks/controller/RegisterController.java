@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/register")
-@CrossOrigin
+
 @RequiredArgsConstructor
 
 public class RegisterController {

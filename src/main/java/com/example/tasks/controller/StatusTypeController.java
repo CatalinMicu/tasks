@@ -2,15 +2,12 @@ package com.example.tasks.controller;
 
 import com.example.tasks.dto.StatusTypeDTO;
 import com.example.tasks.service.StatusTypeService;
-import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/statuses")
-@CrossOrigin
 public class StatusTypeController {
     private final StatusTypeService statusTypeService;
 
@@ -18,31 +15,31 @@ public class StatusTypeController {
         this.statusTypeService = statusTypeService;
     }
 
-    @GetMapping("/{id}")
-    public StatusTypeDTO getStatusById(@PathVariable String id) {
-        return statusTypeService.getStatusById(id);
-    }
-
     @GetMapping
     public List<StatusTypeDTO> getAllStatuses() {
         return statusTypeService.getAllStatuses();
     }
 
-    @PostMapping
-    @PreAuthorize("@permissionChecker.isAdmin()")
-    public StatusTypeDTO createStatus(@Valid @RequestBody StatusTypeDTO statusTypeDTO) {
-        return statusTypeService.createStatus(statusTypeDTO);
-    }
+    // @GetMapping("/{id}")
+    // public StatusTypeDTO getStatusById(@PathVariable String id) {
+    //     return statusTypeService.getStatusById(id);
+    // }
 
-    @PatchMapping("/{id}")
-    @PreAuthorize("@permissionChecker.isAdmin()")
-    public StatusTypeDTO updateStatus(@PathVariable String id, @Valid @RequestBody StatusTypeDTO statusTypeDTO) {
-        return statusTypeService.updateStatus(id, statusTypeDTO);
-    }
+    // @PostMapping
+    // @PreAuthorize("@permissionChecker.isAdmin()")
+    // public StatusTypeDTO createStatus(@Valid @RequestBody StatusTypeDTO statusTypeDTO) {
+    //     return statusTypeService.createStatus(statusTypeDTO);
+    // }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("@permissionChecker.isAdmin()")
-    public void deleteStatus(@PathVariable String id) {
-        statusTypeService.deleteStatus(id);
-    }
+    // @PatchMapping("/{id}")
+    // @PreAuthorize("@permissionChecker.isAdmin()")
+    // public StatusTypeDTO updateStatus(@PathVariable String id, @Valid @RequestBody StatusTypeDTO statusTypeDTO) {
+    //     return statusTypeService.updateStatus(id, statusTypeDTO);
+    // }
+
+    // @DeleteMapping("/{id}")
+    // @PreAuthorize("@permissionChecker.isAdmin()")
+    // public void deleteStatus(@PathVariable String id) {
+    //     statusTypeService.deleteStatus(id);
+    // }
 }

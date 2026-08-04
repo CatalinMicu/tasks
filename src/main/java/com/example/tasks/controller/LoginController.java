@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/login")
 @RequiredArgsConstructor
-@CrossOrigin
 public class LoginController {
 
     private final LoginRegisterService loginRegisterService;

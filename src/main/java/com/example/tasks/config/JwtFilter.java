@@ -13,7 +13,6 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.AesKey;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -43,8 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 JwtClaims claims = jwtConsumer.processToClaims(token);
 
                 Long userId = Long.valueOf(claims.getClaimValue("userId").toString());
-                String username = (String) claims.getClaimValue("username");
-                String email = (String) claims.getClaimValue("email");
 
 
                 UsernamePasswordAuthenticationToken auth =

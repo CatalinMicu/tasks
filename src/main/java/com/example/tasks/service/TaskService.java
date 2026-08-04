@@ -11,6 +11,11 @@ import com.example.tasks.repository.TaskRepository;
 import com.example.tasks.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -29,23 +34,50 @@ public class TaskService {
     private final PermissionChecker permissionChecker;
     private final NotificationService notificationService;
 
-    public List<TaskDTO> getTasks() {
+    public Page<TaskDTO> getTaskPage(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            String view
+    ) {
         requirePermission("READ");
 
-        List<Task> tasks;
-        if (permissionChecker.isAdmin()) {
-            tasks = taskRepository.findAll();
+        String sortField = getTaskSortField(sortBy);
+        Sort sort = Sort.by(sortField).ascending();
+        if ("desc".equalsIgnoreCase(direction)) {
+            sort = Sort.by(sortField).descending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        User currentUser = permissionChecker.getCurrentUser();
+        Page<Task> taskPage;
+        boolean isAdmin = permissionChecker.isAdmin();
+
+        if (isAdmin && "assigned".equalsIgnoreCase(view)) {
+            taskPage = taskRepository.findAllByCreatedByIgnoreCase(
+                    currentUser.getEmail(),
+                    pageable
+            );
+        } else if (isAdmin && "all".equalsIgnoreCase(view)) {
+            taskPage = taskRepository.findAll(pageable);
         } else {
-            Long userId = permissionChecker.getCurrentUser().getUserId();
-            tasks = taskRepository.findAllByUser_UserId(userId);
+            taskPage = taskRepository.findAllByUser_UserId(
+                    currentUser.getUserId(),
+                    pageable
+            );
         }
 
         List<TaskDTO> taskDTOs = new ArrayList<>();
-        for (Task task : tasks) {
+        for (Task task : taskPage.getContent()) {
             taskDTOs.add(taskMapper.toDto(task));
         }
 
-        return taskDTOs;
+        return new PageImpl<>(
+                taskDTOs,
+                pageable,
+                taskPage.getTotalElements()
+        );
     }
 
     public TaskDTO getTaskById(long id) {
@@ -73,17 +105,6 @@ public class TaskService {
         );
 
         return taskMapper.toDto(savedTask);
-    }
-
-    @Transactional
-    public List<TaskDTO> addTasksFromList(List<TaskDTO> tasks) {
-        List<TaskDTO> savedTasks = new ArrayList<>();
-
-        for (TaskDTO task : tasks) {
-            savedTasks.add(addTask(task));
-        }
-
-        return savedTasks;
     }
 
     @Transactional
@@ -125,40 +146,6 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
-    @Transactional
-    public void deleteAllTasks() {
-        requirePermission("DELETE");
-        if (!permissionChecker.isAdmin()) {
-            throw new AccessDeniedException("Only ADMIN can delete all tasks");
-        }
-        taskRepository.deleteAll();
-    }
-
-    public List<TaskDTO> getTasksDueBefore(LocalDate dueDate) {
-        List<TaskDTO> matchingTasks = new ArrayList<>();
-
-        for (TaskDTO task : getTasks()) {
-            if (task.getDueDate() != null &&
-                    task.getDueDate().isBefore(dueDate)) {
-                matchingTasks.add(task);
-            }
-        }
-
-        return matchingTasks;
-    }
-
-    public List<TaskDTO> getTasksByStatus(String statusName) {
-        List<TaskDTO> matchingTasks = new ArrayList<>();
-
-        for (TaskDTO task : getTasks()) {
-            if (statusName.equalsIgnoreCase(task.getStatusName())) {
-                matchingTasks.add(task);
-            }
-        }
-
-        return matchingTasks;
-    }
-
     public List<TaskDTO> searchTasks(String assignedTo, String subject, LocalDate dueDate, String status) {
         List<TaskDTO> matchingTasks = new ArrayList<>();
 
@@ -197,24 +184,6 @@ public class TaskService {
         return matchingTasks;
     }
 
-    public long countTasks() {
-        return getTasks().size();
-    }
-
-    public List<TaskDTO> getOverdueTasks() {
-        LocalDate now = LocalDate.now();
-        List<TaskDTO> overdueTasks = new ArrayList<>();
-
-        for (TaskDTO task : getTasks()) {
-            if (task.getDueDate() != null &&
-                    task.getDueDate().isBefore(now)) {
-                overdueTasks.add(task);
-            }
-        }
-
-        return overdueTasks;
-    }
-
     private StatusType findStatusByName(String statusName) {
         return statusTypeRepository.findFirstByStatusNameIgnoreCase(statusName.trim())
                 .orElseThrow(() -> new IllegalArgumentException("Status not found: " + statusName));
@@ -228,22 +197,6 @@ public class TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
 
-    public List<TaskDTO> getTasksByUserAndStatus(Long userId, String statusName) {
-        List<TaskDTO> matchingTasks = new ArrayList<>();
-
-        for (TaskDTO task : getTasks()) {
-            boolean sameUser = userId.equals(task.getUserId());
-            boolean sameStatus =
-                    statusName.equalsIgnoreCase(task.getStatusName());
-
-            if (sameUser && sameStatus) {
-                matchingTasks.add(task);
-            }
-        }
-
-        return matchingTasks;
-    }
-
     private void requirePermission(String action) {
         if (!permissionChecker.hasPermission("TASK", action)) {
             throw new AccessDeniedException("Missing " + action + " permission on TASK");
@@ -255,4 +208,113 @@ public class TaskService {
             throw new AccessDeniedException("Access denied for this task");
         }
     }
+
+    private String getTaskSortField(String sortBy) {
+        if ("user".equalsIgnoreCase(sortBy)) {
+            return "user.username";
+        }
+        if ("name".equalsIgnoreCase(sortBy)) {
+            return "name";
+        }
+
+        return "taskId";
+    }
+
+    public List<TaskDTO> getTasks() {
+        requirePermission("READ");
+
+        List<Task> tasks;
+        if (permissionChecker.isAdmin()) {
+            tasks = taskRepository.findAll();
+        } else {
+            Long userId = permissionChecker.getCurrentUser().getUserId();
+            tasks = taskRepository.findAllByUser_UserId(userId);
+        }
+
+        List<TaskDTO> taskDTOs = new ArrayList<>();
+        for (Task task : tasks) {
+            taskDTOs.add(taskMapper.toDto(task));
+        }
+
+        return taskDTOs;
+    }
+
+    // @Transactional
+    // public List<TaskDTO> addTasksFromList(List<TaskDTO> tasks) {
+    //     List<TaskDTO> savedTasks = new ArrayList<>();
+    //
+    //     for (TaskDTO task : tasks) {
+    //         savedTasks.add(addTask(task));
+    //     }
+    //
+    //     return savedTasks;
+    // }
+
+    // @Transactional
+    // public void deleteAllTasks() {
+    //     requirePermission("DELETE");
+    //     if (!permissionChecker.isAdmin()) {
+    //         throw new AccessDeniedException("Only ADMIN can delete all tasks");
+    //     }
+    //     taskRepository.deleteAll();
+    // }
+
+    // public List<TaskDTO> getTasksDueBefore(LocalDate dueDate) {
+    //     List<TaskDTO> matchingTasks = new ArrayList<>();
+    //
+    //     for (TaskDTO task : getTasks()) {
+    //         if (task.getDueDate() != null &&
+    //                 task.getDueDate().isBefore(dueDate)) {
+    //             matchingTasks.add(task);
+    //         }
+    //     }
+    //
+    //     return matchingTasks;
+    // }
+
+    // public List<TaskDTO> getTasksByStatus(String statusName) {
+    //     List<TaskDTO> matchingTasks = new ArrayList<>();
+    //
+    //     for (TaskDTO task : getTasks()) {
+    //         if (statusName.equalsIgnoreCase(task.getStatusName())) {
+    //             matchingTasks.add(task);
+    //         }
+    //     }
+    //
+    //     return matchingTasks;
+    // }
+
+    // public long countTasks() {
+    //     return getTasks().size();
+    // }
+
+    // public List<TaskDTO> getOverdueTasks() {
+    //     LocalDate now = LocalDate.now();
+    //     List<TaskDTO> overdueTasks = new ArrayList<>();
+    //
+    //     for (TaskDTO task : getTasks()) {
+    //         if (task.getDueDate() != null &&
+    //                 task.getDueDate().isBefore(now)) {
+    //             overdueTasks.add(task);
+    //         }
+    //     }
+    //
+    //     return overdueTasks;
+    // }
+
+    // public List<TaskDTO> getTasksByUserAndStatus(Long userId, String statusName) {
+    //     List<TaskDTO> matchingTasks = new ArrayList<>();
+    //
+    //     for (TaskDTO task : getTasks()) {
+    //         boolean sameUser = userId.equals(task.getUserId());
+    //         boolean sameStatus =
+    //                 statusName.equalsIgnoreCase(task.getStatusName());
+    //
+    //         if (sameUser && sameStatus) {
+    //             matchingTasks.add(task);
+    //         }
+    //     }
+    //
+    //     return matchingTasks;
+    // }
 }

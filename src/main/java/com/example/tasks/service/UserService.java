@@ -1,19 +1,27 @@
 package com.example.tasks.service;
 
+import com.example.tasks.config.PermissionChecker;
 import com.example.tasks.domain.Roles;
+import com.example.tasks.domain.Task;
 import com.example.tasks.domain.User;
 import com.example.tasks.dto.UserDTO;
 import com.example.tasks.mapper.UserMapper;
+import com.example.tasks.repository.NotificationsRepository;
 import com.example.tasks.repository.RoleRepository;
+import com.example.tasks.repository.TaskCommentRepository;
 import com.example.tasks.repository.TaskRepository;
 import com.example.tasks.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +33,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final TaskRepository taskRepository;
+    private final TaskCommentRepository taskCommentRepository;
+    private final NotificationsRepository notificationsRepository;
     private final UserMapper userMapper;
+    private final PermissionChecker permissionChecker;
 
 
     public List<UserDTO> getAllUsers() {
@@ -39,102 +50,178 @@ public class UserService {
         return users;
     }
 
-    public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            log.warn("User not found with id {}", id);
-            return null;
+    public Page<UserDTO> getUserPage(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+        String sortField = getUserSortField(sortBy);
+        Sort sort = Sort.by(sortField).ascending();
+        if ("desc".equalsIgnoreCase(direction)) {
+            sort = Sort.by(sortField).descending();
         }
-        return userMapper.toDto(user);
-    }
 
-    @Transactional
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = userMapper.toEntity(userDTO);
-        Roles userRole = roleRepository.findByRoleName("USER")
-                .orElseThrow(() -> new IllegalStateException("Role USER not found"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<UserDTO> userDTOs = new ArrayList<>();
 
-        user.setRole(userRole);
-        user.setIsInternal(0);
-        user.setCreationDate(LocalDateTime.now());
-        user.setCreatedBy("system");
-        user.setLastUpdateDate(LocalDateTime.now());
-        user.setLastUpdatedBy("system");
+        for (User user : userPage.getContent()) {
+            userDTOs.add(userMapper.toDto(user));
+        }
 
-        User savedUser = userRepository.save(user);
-        log.info("User created with id {}", savedUser.getUserId());
-        return userMapper.toDto(savedUser);
+        return new PageImpl<>(
+                userDTOs,
+                pageable,
+                userPage.getTotalElements()
+        );
     }
 
     @Transactional
     public void deleteUser(Long id) {
-        if(!userRepository.existsById(id)) {
+        requireUserPermission("DELETE");
+
+        User currentUser = permissionChecker.getCurrentUser();
+        User userToDelete = userRepository.findById(id).orElse(null);
+
+        if (userToDelete == null) {
             log.warn("User not found with id {}", id);
             return;
         }
-        taskRepository.deleteAll(taskRepository.findAllByUser_UserId(id));
-        userRepository.deleteById(id);
+        if (currentUser.getUserId().equals(id)) {
+            throw new AccessDeniedException("You cannot delete your own account");
+        }
+
+        requireAdminManagementPermission(userToDelete);
+
+        List<Task> assignedTasks = taskRepository.findAllByUser_UserId(id);
+
+        for (Task task : assignedTasks) {
+            notificationsRepository.deleteAllByTaskId(task.getTaskId());
+            taskCommentRepository.deleteAllByTask_TaskId(task.getTaskId());
+        }
+
+        notificationsRepository.deleteAllByUserId(id);
+        taskCommentRepository.deleteAllByUser_UserId(id);
+        taskRepository.deleteAll(assignedTasks);
+        userRepository.delete(userToDelete);
         log.info("User deleted with id {}", id);
     }
 
-    @Transactional
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser == null) {
-            log.warn("User not found with id {}", id);
-            return null;
-        }
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setBirthDate(userDTO.getBirthDate());
-        existingUser.setIsInternal(userDTO.getIsInternal());
-        existingUser.setLastUpdateDate(LocalDateTime.now());
-        existingUser.setLastUpdatedBy("system");
-
-        User updatedUser = userRepository.save(existingUser);
-        return userMapper.toDto(updatedUser);
-    }
-
-    public List<UserDTO> searchByUsername(String username) {
-        List<UserDTO> users = new ArrayList<>();
-
-        for (User user : userRepository.searchByUsername(username)) {
-            users.add(userMapper.toDto(user));
-        }
-
-        return users;
-    }
-
     public UserDTO updateRole(Long id, String roleName) {
+        requireUserPermission("UPDATE_ROLE");
+
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             log.warn("User not found with id {}", id);
             return null;
         }
-        if ("ADMIN".equalsIgnoreCase(user.getRole().getRoleName())) {
-            throw new AccessDeniedException("The role of an ADMIN cannot be changed");
+
+        requireAdminManagementPermission(user);
+
+        if ("SUPER_ADMIN".equalsIgnoreCase(roleName)) {
+            throw new AccessDeniedException(
+                    "SUPER_ADMIN role cannot be assigned from the application"
+            );
         }
+
         Roles role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new IllegalStateException("Role " + roleName + " not found"));
         user.setRole(role);
         return userMapper.toDto(userRepository.save(user));
     }
 
-    private void applyDefaults(User user) {
-        if (user.getIsInternal() == null) {
-            user.setIsInternal(1);
-        }
-        if (user.getCreationDate() == null) {
-            user.setCreationDate(LocalDateTime.now());
-        }
-        if (user.getCreatedBy() == null || user.getCreatedBy().isBlank()) {
-            user.setCreatedBy("system");
-        }
-        if (user.getLastUpdateDate() == null) {
-            user.setLastUpdateDate(LocalDateTime.now());
-        }
-        if (user.getLastUpdatedBy() == null || user.getLastUpdatedBy().isBlank()) {
-            user.setLastUpdatedBy("system");
+    private void requireUserPermission(String action) {
+        if (!permissionChecker.hasPermission("USER", action)) {
+            throw new AccessDeniedException(
+                    "Missing " + action + " permission on USER"
+            );
         }
     }
+
+    private void requireAdminManagementPermission(User user) {
+        String roleName = user.getRole().getRoleName();
+
+        if ("SUPER_ADMIN".equalsIgnoreCase(roleName)) {
+            throw new AccessDeniedException(
+                    "A SUPER_ADMIN account cannot be changed"
+            );
+        }
+
+        if ("ADMIN".equalsIgnoreCase(roleName) &&
+                !permissionChecker.hasPermission("USER", "MANAGE_ADMIN")) {
+            throw new AccessDeniedException(
+                    "Only SUPER_ADMIN can manage ADMIN accounts"
+            );
+        }
+    }
+
+    private String getUserSortField(String sortBy) {
+        if ("id".equalsIgnoreCase(sortBy)) {
+            return "userId";
+        }
+        if ("email".equalsIgnoreCase(sortBy)) {
+            return "email";
+        }
+        if ("role".equalsIgnoreCase(sortBy)) {
+            return "role.roleName";
+        }
+
+        return "username";
+    }
+
+    // public UserDTO getUserById(Long id) {
+    //     User user = userRepository.findById(id).orElse(null);
+    //     if (user == null) {
+    //         log.warn("User not found with id {}", id);
+    //         return null;
+    //     }
+    //     return userMapper.toDto(user);
+    // }
+
+    // @Transactional
+    // public UserDTO createUser(UserDTO userDTO) {
+    //     User user = userMapper.toEntity(userDTO);
+    //     Roles userRole = roleRepository.findByRoleName("USER")
+    //             .orElseThrow(() -> new IllegalStateException("Role USER not found"));
+    //
+    //     user.setRole(userRole);
+    //     user.setIsInternal(0);
+    //     user.setCreationDate(LocalDateTime.now());
+    //     user.setCreatedBy("system");
+    //     user.setLastUpdateDate(LocalDateTime.now());
+    //     user.setLastUpdatedBy("system");
+    //
+    //     User savedUser = userRepository.save(user);
+    //     log.info("User created with id {}", savedUser.getUserId());
+    //     return userMapper.toDto(savedUser);
+    // }
+
+    // @Transactional
+    // public UserDTO updateUser(Long id, UserDTO userDTO) {
+    //     User existingUser = userRepository.findById(id).orElse(null);
+    //     if (existingUser == null) {
+    //         log.warn("User not found with id {}", id);
+    //         return null;
+    //     }
+    //     existingUser.setUsername(userDTO.getUsername());
+    //     existingUser.setBirthDate(userDTO.getBirthDate());
+    //     existingUser.setIsInternal(userDTO.getIsInternal());
+    //     existingUser.setLastUpdateDate(LocalDateTime.now());
+    //     existingUser.setLastUpdatedBy("system");
+    //
+    //     User updatedUser = userRepository.save(existingUser);
+    //     return userMapper.toDto(updatedUser);
+    // }
+
+    // public List<UserDTO> searchByUsername(String username) {
+    //     List<UserDTO> users = new ArrayList<>();
+    //
+    //     for (User user : userRepository.searchByUsername(username)) {
+    //         users.add(userMapper.toDto(user));
+    //     }
+    //
+    //     return users;
+    // }
 
 }

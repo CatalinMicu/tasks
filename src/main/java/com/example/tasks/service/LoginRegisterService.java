@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
@@ -64,7 +63,7 @@ public class LoginRegisterService {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
             }
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
     }
