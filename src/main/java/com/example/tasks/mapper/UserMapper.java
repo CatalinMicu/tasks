@@ -21,21 +21,4 @@ public class UserMapper {
                 .roleName(user.getRole().getRoleName())
                 .build();
     }
-
-    public User toEntity(UserDTO userDTO) {
-        return User.builder()
-                .userId(userDTO.getUserId())
-                .username(userDTO.getUsername())
-                .birthDate(userDTO.getBirthDate())
-                .isInternal(userDTO.getIsInternal())
-                .creationDate(userDTO.getCreationDate())
-                .createdBy(userDTO.getCreatedBy())
-                .lastUpdateDate(userDTO.getLastUpdateDate())
-                .lastUpdatedBy(userDTO.getLastUpdatedBy())
-                .createdByFullName(userDTO.getCreatedByFullname())
-                .email(userDTO.getEmail())
-                .password(userDTO.getPassword())
-                .build();
-
-    }
 }

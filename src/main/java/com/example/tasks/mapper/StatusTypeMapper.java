@@ -17,15 +17,4 @@ public class StatusTypeMapper {
                 .createdByFullname(statusType.getCreatedByFullName())
                 .build();
     }
-
-    public StatusType toEntity(StatusTypeDTO statusTypeDTO) {
-        return StatusType.builder()
-                .statusName(statusTypeDTO.getStatusName())
-                .creationDate(statusTypeDTO.getCreationDate())
-                .createdBy(statusTypeDTO.getCreatedBy())
-                .lastUpdateDate(statusTypeDTO.getLastUpdateDate())
-                .lastUpdatedBy(statusTypeDTO.getLastUpdatedBy())
-                .createdByFullName(statusTypeDTO.getCreatedByFullname())
-                .build();
-    }
 }

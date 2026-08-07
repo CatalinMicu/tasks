@@ -65,48 +65,4 @@ public class TaskController {
     public TaskDTO updateTaskStatus(@PathVariable Long id, @RequestParam String statusName) {
         return taskService.updateTaskStatus(id, statusName);
     }
-
-    // @GetMapping
-    // public List<TaskDTO> getTasks() {
-    //     return taskService.getTasks();
-    // }
-
-    // @GetMapping("/due-before")
-    // public List<TaskDTO> getTasksDueBefore(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-    //     return taskService.getTasksDueBefore(date);
-    // }
-
-    // @GetMapping("/status/{status}")
-    // public List<TaskDTO> getTasksByStatus(@PathVariable String status) {
-    //     return taskService.getTasksByStatus(status);
-    // }
-
-    // @GetMapping("/count")
-    // public long countTasks() {
-    //     return taskService.countTasks();
-    // }
-
-    // @GetMapping("/overdue")
-    // public List<TaskDTO> getOverdueTasks() {
-    //     return taskService.getOverdueTasks();
-    // }
-
-    // @DeleteMapping
-    // public void deleteAllTasks() {
-    //     taskService.deleteAllTasks();
-    // }
-
-    // @PostMapping("/bulk")
-    // public List<TaskDTO> addTasks(@Valid @RequestBody List<@Valid TaskDTO> tasks) {
-    //     return taskService.addTasksFromList(tasks);
-    // }
-
-    // @GetMapping("/user/{userId}/status/{statusName}")
-    // public List<TaskDTO> getTasksByUserAndStatus(
-    //         @PathVariable Long userId,
-    //         @PathVariable String statusName
-    // ) {
-    //     return taskService.getTasksByUserAndStatus(userId, statusName);
-    // }
-
 }

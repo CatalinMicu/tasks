@@ -29,9 +29,10 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size,
             @RequestParam(defaultValue = "username") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "") String search
     ) {
-        return userService.getUserPage(page, size, sortBy, direction);
+        return userService.getUserPage(page, size, sortBy, direction, search);
     }
 
     @PatchMapping("/{id}/role")
@@ -44,26 +45,4 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }
-
-    // @GetMapping("/{id}")
-    // public UserDTO getUserById(@PathVariable Long id) {
-    //     return userService.getUserById(id);
-    // }
-
-    // @PostMapping
-    // public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
-    //     return userService.createUser(userDTO);
-    // }
-
-    // @PutMapping("/{id}")
-    // public UserDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
-    //     return userService.updateUser(id, userDTO);
-    // }
-
-    // @GetMapping("/search")
-    // public List<UserDTO> searchByUsername(@RequestParam String username) {
-    //     return userService.searchByUsername(username);
-    // }
-
-
 }

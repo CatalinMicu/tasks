@@ -54,7 +54,8 @@ public class UserService {
             int page,
             int size,
             String sortBy,
-            String direction
+            String direction,
+            String search
     ) {
         String sortField = getUserSortField(sortBy);
         Sort sort = Sort.by(sortField).ascending();
@@ -63,7 +64,20 @@ public class UserService {
         }
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<User> userPage = userRepository.findAll(pageable);
+        Page<User> userPage;
+
+        if (search == null || search.isBlank()) {
+            userPage = userRepository.findAll(pageable);
+        } else {
+            String searchValue = search.trim();
+            userPage = userRepository
+                    .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            searchValue,
+                            searchValue,
+                            pageable
+                    );
+        }
+
         List<UserDTO> userDTOs = new ArrayList<>();
 
         for (User user : userPage.getContent()) {
@@ -169,59 +183,4 @@ public class UserService {
 
         return "username";
     }
-
-    // public UserDTO getUserById(Long id) {
-    //     User user = userRepository.findById(id).orElse(null);
-    //     if (user == null) {
-    //         log.warn("User not found with id {}", id);
-    //         return null;
-    //     }
-    //     return userMapper.toDto(user);
-    // }
-
-    // @Transactional
-    // public UserDTO createUser(UserDTO userDTO) {
-    //     User user = userMapper.toEntity(userDTO);
-    //     Roles userRole = roleRepository.findByRoleName("USER")
-    //             .orElseThrow(() -> new IllegalStateException("Role USER not found"));
-    //
-    //     user.setRole(userRole);
-    //     user.setIsInternal(0);
-    //     user.setCreationDate(LocalDateTime.now());
-    //     user.setCreatedBy("system");
-    //     user.setLastUpdateDate(LocalDateTime.now());
-    //     user.setLastUpdatedBy("system");
-    //
-    //     User savedUser = userRepository.save(user);
-    //     log.info("User created with id {}", savedUser.getUserId());
-    //     return userMapper.toDto(savedUser);
-    // }
-
-    // @Transactional
-    // public UserDTO updateUser(Long id, UserDTO userDTO) {
-    //     User existingUser = userRepository.findById(id).orElse(null);
-    //     if (existingUser == null) {
-    //         log.warn("User not found with id {}", id);
-    //         return null;
-    //     }
-    //     existingUser.setUsername(userDTO.getUsername());
-    //     existingUser.setBirthDate(userDTO.getBirthDate());
-    //     existingUser.setIsInternal(userDTO.getIsInternal());
-    //     existingUser.setLastUpdateDate(LocalDateTime.now());
-    //     existingUser.setLastUpdatedBy("system");
-    //
-    //     User updatedUser = userRepository.save(existingUser);
-    //     return userMapper.toDto(updatedUser);
-    // }
-
-    // public List<UserDTO> searchByUsername(String username) {
-    //     List<UserDTO> users = new ArrayList<>();
-    //
-    //     for (User user : userRepository.searchByUsername(username)) {
-    //         users.add(userMapper.toDto(user));
-    //     }
-    //
-    //     return users;
-    // }
-
 }
