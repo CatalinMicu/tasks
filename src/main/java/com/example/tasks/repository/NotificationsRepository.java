@@ -12,7 +12,7 @@ public interface NotificationsRepository extends JpaRepository<Notification, Lon
 
     List<Notification> findAllByUserIdOrderByCreationDateDesc(Long userId);
 
-    Optional<Notification> findByNotificationIdAndUserId(
+    Optional<Notification>  findByNotificationIdAndUserId(
             Long notificationId,
             Long userId
     );
